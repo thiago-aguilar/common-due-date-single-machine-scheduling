@@ -2,10 +2,11 @@ import pandas as pd
 from .constructive_heuristic import ConstructiveHeuristicFactory
 
 class ProblemManager:
-    def __init__(self, path_data) -> None:
+    def __init__(self, path_data, due_date) -> None:
         self.path_data = path_data
 
         self.tasks_df = self.initialize_tasks(path_data)
+        self.due_date = due_date
 
     @staticmethod
     def initialize_tasks(path_data):
@@ -17,6 +18,6 @@ class ProblemManager:
 
     def run(self):
         # Create initial solution with constructive heuristic
-        constructive_heuristic = ConstructiveHeuristicFactory(self.tasks_df)
-        constructive_heuristic.run()
-
+        constructive_heuristic = ConstructiveHeuristicFactory(self.tasks_df, self.due_date)
+        (sequence_output, completion_time, f) = constructive_heuristic.run()
+        breakpoint()
