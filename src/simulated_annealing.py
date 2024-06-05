@@ -42,7 +42,7 @@ class SimulatedAnnealing:
                 # If it does not improves, check acceptance criterion
                 else:
                     acceptance_criterion = np.exp(-delta_e / temperature)
-                    random_number = np.randrom.uniform(0,1)
+                    random_number = np.random.uniform(0,1)
                     if random_number < acceptance_criterion:
                         self.store_solution(new_solution, new_solution_obj)
 
