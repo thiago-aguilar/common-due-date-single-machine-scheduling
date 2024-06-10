@@ -1,5 +1,6 @@
 import pandas as pd
 from .constructive_heuristic import ConstructiveHeuristicFactory
+from .simulated_annealing import SimulatedAnnealing
 
 class ProblemManager:
     def __init__(self, path_data, due_date) -> None:
@@ -20,4 +21,8 @@ class ProblemManager:
         # Create initial solution with constructive heuristic
         constructive_heuristic = ConstructiveHeuristicFactory(self.tasks_df, self.due_date)
         (sequence_output, completion_time, f) = constructive_heuristic.run()
+
+        # Create SA solver with initial solution previously created
+        simulated_annealing_obj = SimulatedAnnealing(task_df=self.tasks_df, due_date=self.due_date, initial_solution=sequence_output)
+        simulated_annealing_obj.run()
         breakpoint()
