@@ -21,27 +21,33 @@ class ProblemEvaluator:
         self.solver = SolverFactory('gurobi')
 
     def evaluate_solution(self, solution_to_evaluate) -> float:
-        self.fix_d_solution(solution_to_evaluate)
-        self.define_constraints()
+        solution_df = self.fix_d_solution(solution_to_evaluate)
         
-        results = self.solver.solve(self.model, tee=True)
+        results = self.solver.solve(self.model, tee=False)
         if str(results['Solver'].Termination_condition.value) == 'optimal':
             obj_function = pyo.value(self.model.obj)
-            return obj_function
+            offset = pyo.value(self.model.offset)
+            solution_df['task_deliver_time'] = solution_df['p_cumsum'] + offset
+            solution_df['task_before_due_date'] = solution_df['task_deliver_time'] <= self.due_date
+            tasks_before_dd = solution_df['task_before_due_date'].sum()
+            return obj_function, tasks_before_dd 
         else:
             raise Exception('Error when evaluation solution')
     
     def fix_d_solution(self, solution_to_evaluate):
-
         new_solution_df = pd.DataFrame({
             'task_id':solution_to_evaluate
         }).set_index('task_id')
 
-        merged_df = new_solution_df.join(self.task_df[['p']])
+        merged_df = new_solution_df.join(self.task_df[['p', 'alpha', 'beta']])
         merged_df['p_cumsum'] = merged_df['p'].cumsum()
         
         d_dict = merged_df.to_dict()['p_cumsum']
-        self.model.d = d_dict
+        for task_id, task_d in d_dict.items():
+            self.model.d[task_id] = task_d
+        return merged_df
+        
+        
 
     def create_initial_model(self):
 
@@ -50,6 +56,7 @@ class ProblemEvaluator:
         self.create_sets()
         self.create_decision_variables()
         self.define_parameters()
+        self.define_constraints()
         self.define_obj_function()
 
     def create_sets(self):
@@ -65,7 +72,7 @@ class ProblemEvaluator:
         if self.problem_type == 'MILP':
             self.model.d = pyo.Var(self.model.I, within=pyo.NonNegativeReals)
         elif self.problem_type == 'LP':
-            # self.model.d = pyo.Param(self.model.I)
+            self.model.d = pyo.Param(self.model.I, mutable=True, initialize=0)
             pass
         else:
             raise Exception('Unsupported problem type for variable d')
@@ -93,8 +100,13 @@ class ProblemEvaluator:
 
     def define_constraints(self):
 
-        if self.problem_type == 'LP':   
+        if self.problem_type == 'LP': 
+            if hasattr(self.model, 'C1'):
+                self.model.del_component(self.model.C1)         
             self.model.C1 = pyo.Constraint(self.model.I, rule=self.rule_constraint_c1_LP)
+
+            if hasattr(self.model, 'C2'):
+                self.model.del_component(self.model.C2)     
             self.model.C2 = pyo.Constraint(self.model.I, rule=self.rule_constraint_c2_LP)
         
         elif self.problem_type == 'MILP':
