@@ -60,10 +60,10 @@ class SimulatedAnnealing:
             # while perturbations_accepted < minimum_perturbations:
             while (n < minimum_tested) and (perturbations_accepted < minimum_perturbations) :
                 
-                if (perturbations_accepted < (minimum_perturbations / 3)):
-                    neighborhood = 1
-                elif (n > (minimum_tested / 2) ) or (perturbations_accepted >= (minimum_perturbations / 3)):
+                if (n > (minimum_tested / 2) ) or (perturbations_accepted >= (minimum_perturbations / 3)):
                     neighborhood = 2
+                else:
+                    neighborhood = 1
                     
 
                 new_solution = self.get_new_solution(neighborhood_type = neighborhood)
