@@ -12,13 +12,13 @@ from pyomo.opt import SolverFactory
 import itertools
 
 class ProblemEvaluator:
-    def __init__(self, task_df, due_date, problem_type='LP'):
+    def __init__(self, task_df, due_date, solver, problem_type='LP'):
         self.task_df = task_df.set_index('task_id')
         self.due_date = due_date
         self.problem_type = problem_type
 
         self.create_initial_model()
-        self.solver = SolverFactory('gurobi')
+        self.solver = solver
 
     def evaluate_solution(self, solution_to_evaluate) -> float:
         solution_df = self.fix_d_solution(solution_to_evaluate)
@@ -34,6 +34,22 @@ class ProblemEvaluator:
         else:
             raise Exception('Error when evaluation solution')
     
+    def print_d_bounds(self):
+        for i in self.model.d:
+            print(f"d[{i}] lower bound: {self.model.d[i].lb}, upper bound: {self.model.d[i].ub}")
+
+    def solve_model(self):
+        breakpoint()
+        results = self.solver.solve(self.model, tee=True)
+
+        if str(results['Solver'].Termination_condition.value) == 'optimal':
+            obj_function = pyo.value(self.model.obj)
+            offset = pyo.value(self.model.offset)
+            breakpoint()
+            return obj_function
+        else:
+            raise Exception('Error when evaluation solution')
+
     def fix_d_solution(self, solution_to_evaluate):
         new_solution_df = pd.DataFrame({
             'task_id':solution_to_evaluate
@@ -84,8 +100,16 @@ class ProblemEvaluator:
         if self.problem_type == 'MILP':
             self.model.b = pyo.Var(self.model.Omega, within=pyo.Binary)
 
-        if self.problem_type == 'LP':
-            self.model.offset = pyo.Var(within=pyo.NonNegativeReals, bounds=(0, self.due_date))
+        self.model.offset = pyo.Var(within=pyo.NonNegativeReals, bounds=(0, self.due_date))
+    
+    def free_all_tasks(self):
+        for task_id in self.task_df.index:
+            self.model.d[task_id].setlb(0)
+            self.model.d[task_id].setub(None)
+
+
+    def fix_task(self, task_id, task_end):
+        self.model.d[task_id].bounds = (task_end, task_end)
 
     def define_parameters(self):
         task_df_dict = self.task_df.to_dict()
