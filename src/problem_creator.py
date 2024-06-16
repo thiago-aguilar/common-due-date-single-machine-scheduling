@@ -36,9 +36,6 @@ class ProblemManager:
         SA_obj, SA_solution_df = simulated_annealing_obj.run()
         after_SA_time = time.time()
         print(f'\nFinished simulated annealing in {after_SA_time-after_constructive_time:.2f} secs')
-        # # TODO remove mocked solution
-        # SA_obj = 84105.0
-        # SA_solution_df = pd.read_csv('temp_solution.csv', sep=';')
     
         # Run fix-and-optimize Matheuristic with MILP problem
         load_dotenv('.env')
