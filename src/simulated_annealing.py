@@ -143,13 +143,10 @@ class SimulatedAnnealing:
         # Check if decreased lower than minimum pct change for stop criteria
         min_per_K['% Reducao'] = abs(min_per_K['OBJ'].pct_change()) 
 
-        filter_last_two = min_per_K[-2:]
-
-        filtered_K = min_per_K[filter_last_two]
-        if all(filtered_K['% Reducao'] < self.minimum_pct_change):
+        last_K_rows = min_per_K[-2:]
+        if all(last_K_rows['% Reducao'] < self.minimum_pct_change):
             return True
 
-        print(min_per_K)
         return False
 
 
