@@ -7,7 +7,7 @@ class FixAndOptimize:
     def __init__(self, initial_solution_df, due_date, solver, initial_obj):
         self.task_df = initial_solution_df.copy()
         self.current_solution_df = initial_solution_df      
-        self.current_obj = None  
+        self.current_obj = initial_obj  
         self.due_date = due_date
 
         self.milp_problem_evaluator = ProblemEvaluator(initial_solution_df, due_date, problem_type='MILP', solver=solver)
@@ -56,8 +56,9 @@ class FixAndOptimize:
             new_solution_df = self.milp_problem_evaluator.get_solution_df()
 
             # Update current solution
-            self.current_solution_df = new_solution_df
-            self.current_obj = new_obj
+            if (new_obj < self.current_obj):
+                self.current_solution_df = new_solution_df
+                self.current_obj = new_obj
 
             # Update solution trace
             self.solution_trace_obj.append(self.current_obj)

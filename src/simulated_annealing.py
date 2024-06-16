@@ -4,7 +4,7 @@ from .lp_problem import ProblemEvaluator
 import math
 
 class SimulatedAnnealing:
-    neighborhood_types = {1, 2}
+    neighborhood_types = {1, 2, 3}
     
     def __init__(self, task_df, due_date, initial_solution, solver):
         self.task_df = task_df
@@ -28,6 +28,7 @@ class SimulatedAnnealing:
         # Algorithm control attributes
         self.temperature_alpha = 0.8
         self.stages_stop_criteria = 3
+        self.initial_acceptance = 0.3
 
 
     def get_trace(self):
@@ -52,18 +53,27 @@ class SimulatedAnnealing:
         acceptance_criterion = 0
         while not (stop):
             perturbations_accepted = 0
-            last_stage_obj = self.current_obj
+            last_stage_obj = self.global_best_obj
             # Calculate perturbations beween temperature changes
             minimum_perturbations = self.calculate_minimum_perturbations(current_temperature=temperature)
             minimum_tested = self.calculate_minimum_tested_perturbations()
             n = 0
             # while perturbations_accepted < minimum_perturbations:
-            while (n < minimum_tested) and (perturbations_accepted < minimum_perturbations) :
+            while (n < minimum_tested): #and (perturbations_accepted < minimum_perturbations) :
                 
-                if (n > (minimum_tested / 2) ) or (perturbations_accepted >= (minimum_perturbations / 3)):
-                    neighborhood = 2
-                else:
+                if                                 n <= (minimum_tested / 3):
                     neighborhood = 1
+                elif        (2 * minimum_tested / 3) > n >= (minimum_tested / 3):
+                    neighborhood = 2
+                elif       (2 * minimum_tested / 3) <= n:
+                    neighborhood = 3
+                else:
+                    raise Exception('error, neighborhood not detected')
+                neighborhood = 3
+                # if (n > (minimum_tested / 2) ) or (perturbations_accepted >= (minimum_perturbations / 3)):
+                #     neighborhood = 2
+                # else:
+                #     neighborhood = 1
                     
 
                 new_solution = self.get_new_solution(neighborhood_type = neighborhood)
@@ -93,7 +103,7 @@ class SimulatedAnnealing:
 
             
             # Check if did not improve
-            if (last_stage_obj <= self.current_obj) and temperature < 500:
+            if (last_stage_obj <= self.global_best_obj) and temperature < 500:
                 stages_without_improvement += 1
 
                 print(f'Simulated Annealing stopped at iteration {k} after {self.stages_stop_criteria} iterations without improvement.' )
@@ -116,7 +126,7 @@ class SimulatedAnnealing:
         return (self.global_best_obj, solution_df)
 
     def calculate_minimum_tested_perturbations(self):
-        return 40 * len(self.current_solution)
+        return 5 * len(self.current_solution)
 
     def store_solution(self, new_solution, new_solution_obj, tasks_before_due_date, k, n, neighborhood):
 
@@ -143,6 +153,8 @@ class SimulatedAnnealing:
             return_value = self.get_new_solution_type_1()
         elif neighborhood_type == 2:
             return_value = self.get_new_solution_type_2()
+        elif neighborhood_type == 3:
+            return_value = self.get_new_solution_type_3()
         else:
             raise Exception('Error: Neighborhood type not implemented')
 
@@ -196,11 +208,28 @@ class SimulatedAnnealing:
         solution = pd.concat([current_tasks_before_dd, current_tasks_after_dd], ignore_index=True)
 
         return solution['task_id'].to_list()      
-        
+
+    def get_new_solution_type_3(self) -> list:
+        # change any task between them
+        current_tasks = pd.DataFrame(self.current_solution[:])
+        task_row_1 = current_tasks.sample()
+        task_row_2 = current_tasks.sample()
+
+        task_row_1_index = task_row_1.index.values[0]  # Pega o índice da primeira sample
+        task_row_2_index = task_row_2.index.values[0]  # Pega o índice da segunda sample
+
+        # Aqui, substituímos a primeira sample pela segunda e vice-versa.
+        current_tasks.loc[task_row_1_index] = task_row_2.values[0]
+        current_tasks.loc[task_row_2_index] = task_row_1.values[0]
+
+        return current_tasks[0].to_list()
+
+
+
 
     def calculate_minimum_perturbations(self, current_temperature) -> int:
         # Utilizing 1.5n perturbations accepted 
-        temp_alteration_factor = 1.5  * len(self.current_solution)
+        temp_alteration_factor = 1.2  * len(self.current_solution)
         return temp_alteration_factor
             
     def calculate_next_temperature(self, current_temperature) -> float:
@@ -209,12 +238,12 @@ class SimulatedAnnealing:
     def define_initial_temperature(self) -> float:
         delta_e_array = []
         # Utilize sintetic solution as base obj 
-        new_solution = self.get_new_solution(neighborhood_type = 1)
+        new_solution = self.get_new_solution(neighborhood_type = 3)
         current_obj, _ = self.problem_evaluator.evaluate_solution(new_solution)
 
         # Get 100 solutions in same neighborhood type ans calculate temperature
         for n_try in range(100):
-            new_solution = self.get_new_solution(neighborhood_type = 1)
+            new_solution = self.get_new_solution(neighborhood_type = 3)
             new_solution_obj, _ = self.problem_evaluator.evaluate_solution(new_solution)
 
             # Calculate delta
@@ -222,6 +251,6 @@ class SimulatedAnnealing:
             delta_e_array.append(delta_e)
 
         # Taxa de aceitação inicial
-        tau0 = 0.5
+        tau0 = self.initial_acceptance
         t = np.mean(np.abs(delta_e_array)) / - math.log(tau0)
         return t

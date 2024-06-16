@@ -192,6 +192,6 @@ class ProblemEvaluator:
 
     @staticmethod
     def objective_function_rule(M):
-        obj = sum(M.alpha[i] * M.t[i] + M.beta[i] * M.e[i] for i in M.I)
+        obj = sum(M.alpha[i] * M.e[i] + M.beta[i] * M.t[i] for i in M.I)
         return obj
 

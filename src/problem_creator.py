@@ -44,4 +44,6 @@ class ProblemManager:
         load_dotenv('.env')
         fix_and_optimize = FixAndOptimize(initial_solution_df=SA_solution_df, due_date=self.due_date, solver=self.solver, initial_obj=SA_obj)
         obj_function, solution = fix_and_optimize.run()
+        after_FO_time = time.time()
+        print(f'\nFinished fix and optimize in {after_FO_time-after_SA_time:.2f} secs')
         breakpoint()
