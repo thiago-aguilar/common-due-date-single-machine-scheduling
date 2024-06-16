@@ -14,10 +14,13 @@ class FixAndOptimize:
 
         # Algorithm control attributes
         self.window_size = 10
+        self.window_jump = 5
         self.current_index_offset = 0
         self.solution_trace_df = self.task_df[['task_id']].rename(columns={'task_id': 'solution_0'})
         self.solution_trace_obj = [initial_obj]
         self.current_sol_trace = 1
+
+        print(f'Window size: {self.window_size} | Window jump {self.window_jump}')
 
     def get_trace(self):
         return pd.DataFrame({'Obj_function_trace':self.solution_trace_obj})
@@ -69,7 +72,7 @@ class FixAndOptimize:
             self.current_sol_trace += 1
             
             # Update window offset
-            self.current_index_offset += 5
+            self.current_index_offset += self.window_jump
 
             # Check for stop criteria
             if (self.current_index_offset) >= len(self.current_solution_df):

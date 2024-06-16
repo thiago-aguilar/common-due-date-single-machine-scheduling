@@ -6,7 +6,7 @@ from pyomo.opt import SolverFactory
 import time
 import os
 from dotenv import load_dotenv
-from utils.excel_writer import ExcelWriter
+from .utils.excel_writer import ExcelWriter
 
 class ProblemManager:
     def __init__(self, path_data, due_date, run_id: str, heuristic_parameters: dict) -> None:
@@ -29,13 +29,15 @@ class ProblemManager:
     def export_resuls(self, SA_trace, FO_trace, results):
         output_directory = 'outputs/' + self.run_id
 
-        # Change name until output_dir does not exists
+        # new output directory (if already exists, create suffix for folder name)
         offset_idx = 0
         while not os.path.isdir(output_directory):
             output_directory = 'outputs/' + self.run_id + '_' + str(int(offset_idx))
             offset_idx += 1
+        os.makedirs(output_directory)
 
         # Create file with both outputs in it
+        output_file = output_directory + '/output.xlsx'
         excel_writer = ExcelWriter(output_path=output_directory)
         excel_writer.new_sheet(df=results, sheet_name='Final Solution')
         excel_writer.new_sheet(df=SA_trace, sheet_name='Simulated Annealing Trace')
@@ -64,6 +66,7 @@ class ProblemManager:
         print(f'\nFinished simulated annealing in {after_SA_time-after_constructive_time:.2f} secs')
     
         # Run fix-and-optimize Matheuristic with MILP problem
+        print(f'\n\nInitializing Fix-and-Optimize algorithm\n')
         load_dotenv('.env')
         fix_and_optimize = FixAndOptimize(initial_solution_df=SA_solution_df, due_date=self.due_date, initial_obj=SA_obj)
         obj_function, solution = fix_and_optimize.run()

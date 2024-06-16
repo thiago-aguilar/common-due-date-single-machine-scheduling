@@ -29,6 +29,8 @@ class SimulatedAnnealing:
         self.temperature_alpha = heuristic_parameters['temperature_alpha']
         self.stages_stop_criteria = heuristic_parameters['stages_stop_criteria']
         self.initial_acceptance = heuristic_parameters['initial_acceptance']
+        self.global_minimum_it = heuristic_parameters['global_minimum_it']
+        self.minimum_pct_change = heuristic_parameters['minimum_pct_change']
 
 
     def get_trace(self):
@@ -112,9 +114,13 @@ class SimulatedAnnealing:
                 if (stages_without_improvement >= self.stages_stop_criteria) and (temperature < 500):
                     stop = True
                 
+                
 
             else:
                 stages_without_improvement = 0
+            
+            # Check for relative stop criteria
+            stop = stop | self.check_relative_stop_criteria()
 
         solution_df = (
             pd.DataFrame({
@@ -123,7 +129,29 @@ class SimulatedAnnealing:
             .merge(self.task_df, on='task_id')
         )
 
+        # Check relative stop criteria
         return (self.global_best_obj, solution_df)
+
+    def check_relative_stop_criteria(self):
+
+        min_per_K = self.get_trace().groupby('K').agg({'OBJ': 'min'})
+
+        # if minimum is not reached, do not stop algorithm
+        if len(min_per_K) < self.global_minimum_it:
+            return False
+        
+        # Check if decreased lower than minimum pct change for stop criteria
+        min_per_K['% Reducao'] = abs(min_per_K['OBJ'].pct_change()) 
+
+        filter_last_two = min_per_K[-2:]
+
+        filtered_K = min_per_K[filter_last_two]
+        if all(filtered_K['% Reducao'] < self.minimum_pct_change):
+            return True
+
+        print(min_per_K)
+        return False
+
 
     def calculate_minimum_tested_perturbations(self):
         return 5 * len(self.current_solution)
