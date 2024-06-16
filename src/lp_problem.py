@@ -18,7 +18,7 @@ class ProblemEvaluator:
         self.problem_type = problem_type
 
         self.create_initial_model()
-        self.solver = solver
+        self.solver = SolverFactory('gurobi')
 
     def evaluate_solution(self, solution_to_evaluate) -> float:
         solution_df = self.fix_d_solution(solution_to_evaluate)
@@ -192,6 +192,6 @@ class ProblemEvaluator:
 
     @staticmethod
     def objective_function_rule(M):
-        obj = sum(M.alpha[i] * M.e[i] + M.beta[i] * M.t[i] for i in M.I)
+        obj = sum(M.alpha[i] * M.t[i] + M.beta[i] * M.e[i] for i in M.I)
         return obj
 

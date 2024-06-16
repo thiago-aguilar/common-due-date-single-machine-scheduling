@@ -65,7 +65,7 @@ class FixAndOptimize:
             self.current_sol_trace += 1
             
             # Update window offset
-            self.current_index_offset += self.window_size
+            self.current_index_offset += 5
 
             # Check for stop criteria
             if (self.current_index_offset) >= len(self.current_solution_df):
@@ -76,5 +76,6 @@ class FixAndOptimize:
             len_df = len(self.current_solution_df)
             print(f'Iteration: {it} | Obj: {self.current_obj} | Index offset: {self.current_index_offset} | Lenght {len_df}')
             
+        return self.current_obj, self.current_solution_df
         
         
