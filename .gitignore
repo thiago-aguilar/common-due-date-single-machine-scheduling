@@ -1,3 +1,4 @@
 .env
 *.lic
 __pycache__/
+*outputs/
