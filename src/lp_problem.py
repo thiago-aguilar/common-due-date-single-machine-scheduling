@@ -39,14 +39,13 @@ class ProblemEvaluator:
             print(f"d[{i}] lower bound: {self.model.d[i].lb}, upper bound: {self.model.d[i].ub}")
 
     def solve_model(self):
-        breakpoint()
         results = self.solver.solve(self.model, tee=True)
 
         if str(results['Solver'].Termination_condition.value) == 'optimal':
             obj_function = pyo.value(self.model.obj)
             offset = pyo.value(self.model.offset)
-            breakpoint()
-            return obj_function
+            
+            return obj_function, offset
         else:
             raise Exception('Error when evaluation solution')
 
@@ -81,7 +80,7 @@ class ProblemEvaluator:
 
         # Combinations of tasks for constraints in case is MILP
         if self.problem_type == 'MILP':
-            self.model.Omega = set(itertools.combinations(self.model.I, 2))
+            self.model.Omega = set(itertools.permutations(self.model.I, 2))
 
     def create_decision_variables(self):
 
@@ -105,7 +104,7 @@ class ProblemEvaluator:
     def free_all_tasks(self):
         for task_id in self.task_df.index:
             self.model.d[task_id].setlb(0)
-            self.model.d[task_id].setub(None)
+            self.model.d[task_id].setub(np.inf)
 
 
     def fix_task(self, task_id, task_end):
@@ -120,7 +119,7 @@ class ProblemEvaluator:
         self.model.beta = task_df_dict['beta']
 
         if self.problem_type == 'MILP':
-            self.model.bigM = self.task_df['p'].sum() + 1e-5
+            self.model.bigM = self.task_df['p'].sum() * 2 + 1e-5
 
     def define_constraints(self):
 
@@ -148,7 +147,7 @@ class ProblemEvaluator:
     @staticmethod
     def rule_constraint_c1_MILP(M, i):
         LHS = M.e[i]
-        RHS = M.due_date - M.d[i]
+        RHS = M.due_date - M.d[i] - M.offset
         return LHS >= RHS
             
     @staticmethod
@@ -160,7 +159,7 @@ class ProblemEvaluator:
     @staticmethod
     def rule_constraint_c2_MILP(M, i):
         LHS = M.t[i]
-        RHS = M.d[i] - M.due_date
+        RHS = M.d[i] - M.due_date + M.offset
         return LHS >= RHS
 
     @staticmethod
@@ -173,7 +172,7 @@ class ProblemEvaluator:
     def rule_constraint_c4_MILP(M, i, j):
         LHS = M.d[i] - M.p[i]
         RHS = M.d[j] - M.bigM * M.b[(i,j)]
-        return LHS <= RHS
+        return LHS >= RHS
 
     def define_obj_function(self):
         self.model.obj = pyo.Objective(rule=self.objective_function_rule)
