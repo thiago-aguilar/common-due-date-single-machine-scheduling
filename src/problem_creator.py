@@ -40,5 +40,5 @@ class ProblemManager:
         SA_solution_df = pd.read_csv('temp_solution.csv', sep=';')
     
         # Run fix-and-optimize Matheuristic with MILP problem
-        fix_and_optimize = FixAndOptimize(initial_solution_df=SA_solution_df, due_date=self.due_date, solver=self.solver)
+        fix_and_optimize = FixAndOptimize(initial_solution_df=SA_solution_df, due_date=self.due_date, solver=self.solver, initial_obj=SA_obj)
         obj_function, solution = fix_and_optimize.run()

@@ -39,7 +39,7 @@ class ProblemEvaluator:
             print(f"d[{i}] lower bound: {self.model.d[i].lb}, upper bound: {self.model.d[i].ub}")
 
     def solve_model(self):
-        results = self.solver.solve(self.model, tee=True)
+        results = self.solver.solve(self.model, tee=False)
 
         if str(results['Solver'].Termination_condition.value) == 'optimal':
             obj_function = pyo.value(self.model.obj)
@@ -48,6 +48,19 @@ class ProblemEvaluator:
             return obj_function, offset
         else:
             raise Exception('Error when evaluation solution')
+
+    def get_solution_df(self):
+        columns_solution_df = ['task_id', 'p', 'task_end', 'alpha', 'beta']
+        task_df_return = self.task_df.copy().reset_index()
+        model = self.model
+
+        def get_task_end(task_id):
+            return pyo.value(model.d[task_id])
+        
+        offset = pyo.value(model.offset)
+        task_df_return['task_end'] = task_df_return.apply(lambda x: get_task_end(x['task_id']), axis=1) + offset
+        return task_df_return.sort_values(by='task_end', ascending=True)[columns_solution_df]
+        
 
     def fix_d_solution(self, solution_to_evaluate):
         new_solution_df = pd.DataFrame({
@@ -179,6 +192,6 @@ class ProblemEvaluator:
 
     @staticmethod
     def objective_function_rule(M):
-        obj = sum(M.alpha[i] * M.t[i] + M.beta[i] * M.e[i] for i in M.I)
+        obj = sum(M.alpha[i] * M.e[i] + M.beta[i] * M.t[i] for i in M.I)
         return obj
 
