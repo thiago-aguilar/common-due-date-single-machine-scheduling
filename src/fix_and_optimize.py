@@ -4,7 +4,7 @@ import pandas as pd
 
 class FixAndOptimize:
 
-    def __init__(self, initial_solution_df, due_date, initial_obj):
+    def __init__(self, initial_solution_df, due_date, initial_obj, parameters):
         self.task_df = initial_solution_df.copy()
         self.current_solution_df = initial_solution_df      
         self.current_obj = initial_obj  
@@ -13,8 +13,8 @@ class FixAndOptimize:
         self.milp_problem_evaluator = ProblemEvaluator(initial_solution_df, due_date, problem_type='MILP')
 
         # Algorithm control attributes
-        self.window_size = 10
-        self.window_jump = 5
+        self.window_size = parameters['window_size']
+        self.window_jump = parameters['window_jump']
         self.current_index_offset = 0
         self.solution_trace_df = self.task_df[['task_id']].rename(columns={'task_id': 'solution_0'})
         self.solution_trace_obj = [initial_obj]
