@@ -69,7 +69,7 @@ class ConstructiveHeuristicFactory:
                             max(0, self.task_parameters['beta'][k] * (C_k[k] - self.due_date))
 
             kappa += current_kappa
-        
+
         return (kappa, C_j_chapeu)
 
         
@@ -90,7 +90,7 @@ class ConstructiveHeuristicFactory:
 
             for j in self.missing_tasks_to_be_scheduled:
                 # Calculate task cost
-                task_cost[j], task_completion_time[j]  = self.calculate_task_cost_and_time(j, t0)
+                task_cost[j], task_completion_time[j]  = self.calculate_task_cost_and_time(j, completion_time)
 
                 # if argmin is none initialize it
                 if arg_min == None:
@@ -106,7 +106,7 @@ class ConstructiveHeuristicFactory:
             
             # Update completion_time
             completion_time = task_completion_time[arg_min]
-
+            
             # Add new task cost to fobj
             f = f + self.task_parameters['alpha'][arg_min] * max(0, self.due_date - completion_time) + \
                     self.task_parameters['beta'][arg_min] * max(0, completion_time - self.due_date)
