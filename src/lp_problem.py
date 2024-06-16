@@ -12,7 +12,7 @@ from pyomo.opt import SolverFactory
 import itertools
 
 class ProblemEvaluator:
-    def __init__(self, task_df, due_date, solver, problem_type='LP'):
+    def __init__(self, task_df, due_date, problem_type='LP'):
         self.task_df = task_df.set_index('task_id')
         self.due_date = due_date
         self.problem_type = problem_type

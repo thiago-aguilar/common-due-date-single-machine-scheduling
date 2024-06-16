@@ -4,13 +4,13 @@ import pandas as pd
 
 class FixAndOptimize:
 
-    def __init__(self, initial_solution_df, due_date, solver, initial_obj):
+    def __init__(self, initial_solution_df, due_date, initial_obj):
         self.task_df = initial_solution_df.copy()
         self.current_solution_df = initial_solution_df      
         self.current_obj = initial_obj  
         self.due_date = due_date
 
-        self.milp_problem_evaluator = ProblemEvaluator(initial_solution_df, due_date, problem_type='MILP', solver=solver)
+        self.milp_problem_evaluator = ProblemEvaluator(initial_solution_df, due_date, problem_type='MILP')
 
         # Algorithm control attributes
         self.window_size = 10
@@ -18,6 +18,9 @@ class FixAndOptimize:
         self.solution_trace_df = self.task_df[['task_id']].rename(columns={'task_id': 'solution_0'})
         self.solution_trace_obj = [initial_obj]
         self.current_sol_trace = 1
+
+    def get_trace(self):
+        return pd.DataFrame({'Obj_function_trace':self.solution_trace_obj})
 
     def run(self):
         

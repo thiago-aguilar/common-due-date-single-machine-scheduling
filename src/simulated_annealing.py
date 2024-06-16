@@ -6,12 +6,12 @@ import math
 class SimulatedAnnealing:
     neighborhood_types = {1, 2, 3}
     
-    def __init__(self, task_df, due_date, initial_solution, solver):
+    def __init__(self, task_df, due_date, initial_solution, heuristic_parameters):
         self.task_df = task_df
         self.due_date = due_date                
 
         # Initialize Lp ProblemEvaluator
-        self.problem_evaluator = ProblemEvaluator(task_df, due_date, problem_type='LP', solver=solver)
+        self.problem_evaluator = ProblemEvaluator(task_df, due_date, problem_type='LP')
 
         # Initialize SA algorithm information
         self.current_obj, self.tasks_before_dd = self.problem_evaluator.evaluate_solution(initial_solution)
@@ -26,9 +26,9 @@ class SimulatedAnnealing:
         self.neighborhood_type_trace = [None]
 
         # Algorithm control attributes
-        self.temperature_alpha = 0.8
-        self.stages_stop_criteria = 3
-        self.initial_acceptance = 0.3
+        self.temperature_alpha = heuristic_parameters['temperature_alpha']
+        self.stages_stop_criteria = heuristic_parameters['stages_stop_criteria']
+        self.initial_acceptance = heuristic_parameters['initial_acceptance']
 
 
     def get_trace(self):
