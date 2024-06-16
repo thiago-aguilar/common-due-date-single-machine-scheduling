@@ -9,7 +9,7 @@ instance_name = '200'
 temperature_alpha = 0.8
 stages_stop_criteria = 3
 initial_acceptance = 0.3
-minimum_pct_change = 0.005 # 0.001 for 0.1%
+minimum_pct_change = 0.01 # 0.001 for 0.1%
 global_minimum_it = 5
 
 

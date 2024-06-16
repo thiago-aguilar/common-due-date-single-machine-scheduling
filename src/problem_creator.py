@@ -31,14 +31,14 @@ class ProblemManager:
 
         # new output directory (if already exists, create suffix for folder name)
         offset_idx = 0
-        while not os.path.isdir(output_directory):
+        while os.path.isdir(output_directory): 
             output_directory = 'outputs/' + self.run_id + '_' + str(int(offset_idx))
             offset_idx += 1
         os.makedirs(output_directory)
 
         # Create file with both outputs in it
         output_file = output_directory + '/output.xlsx'
-        excel_writer = ExcelWriter(output_path=output_directory)
+        excel_writer = ExcelWriter(output_path=output_file)
         excel_writer.new_sheet(df=results, sheet_name='Final Solution')
         excel_writer.new_sheet(df=SA_trace, sheet_name='Simulated Annealing Trace')
         excel_writer.new_sheet(df=FO_trace, sheet_name='Fix and Optimize Trace')
