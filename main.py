@@ -22,5 +22,5 @@ heuristic_parameters = {
     'initial_acceptance': initial_acceptance
 }
 
-problem_creator = ProblemManager(path_data, due_date, heuristic_parameters)
+problem_creator = ProblemManager(path_data, due_date, id, heuristic_parameters)
 problem_creator.run()
