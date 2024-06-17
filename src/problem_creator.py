@@ -9,7 +9,14 @@ from dotenv import load_dotenv
 from .utils.excel_writer import ExcelWriter
 
 class ProblemManager:
-    def __init__(self, path_data, due_date, run_id: str, heuristic_parameters: dict, fix_and_optimize_parameters: dict) -> None:
+    def __init__(self, 
+                 path_data, 
+                 due_date, 
+                 run_id: str, 
+                 heuristic_parameters: dict,
+                 fix_and_optimize_parameters: dict, 
+                 has_constructive_heuristic: bool
+        ) -> None:
         self.path_data = path_data
 
         self.tasks_df = self.initialize_tasks(path_data)
@@ -18,6 +25,7 @@ class ProblemManager:
         self.fix_and_optimize_parameters = fix_and_optimize_parameters
 
         self.run_id = run_id
+        self.has_constructive_heuristic = has_constructive_heuristic
 
     @staticmethod
     def initialize_tasks(path_data):
@@ -51,10 +59,14 @@ class ProblemManager:
         begin = time.time()
 
         # Create initial solution with constructive heuristic
-        constructive_heuristic = ConstructiveHeuristicFactory(self.tasks_df, self.due_date)
-        (sequence_output, completion_time, f) = constructive_heuristic.run()
-        after_constructive_time = time.time()
-        print(f'\nFinished constructive heuristic in {after_constructive_time-begin:.2f} secs')
+        if self.has_constructive_heuristic:
+            constructive_heuristic = ConstructiveHeuristicFactory(self.tasks_df, self.due_date)
+            (sequence_output, completion_time, f) = constructive_heuristic.run()
+            after_constructive_time = time.time()
+            print(f'\nFinished constructive heuristic in {after_constructive_time-begin:.2f} secs')
+        else:
+            after_constructive_time = time.time()
+            sequence_output = self.generate_random_solution()
 
         # Create SA solver with initial solution previously created
         simulated_annealing_obj = SimulatedAnnealing(
@@ -91,3 +103,17 @@ class ProblemManager:
         )
 
         
+    def generate_random_solution(self):
+        task_df = self.tasks_df
+        df_return = pd.DataFrame()
+        while len(task_df) > 0:
+            # Seleciona uma linha aleatória
+            sample = task_df.sample()
+            
+            # Concatena a linha selecionada ao df_return
+            df_return = pd.concat([df_return, sample])
+            
+            # Remove a linha selecionada do task_df
+            task_df = task_df.drop(sample.index)
+
+        return df_return['task_id'].to_list()

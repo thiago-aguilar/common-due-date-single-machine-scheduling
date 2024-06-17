@@ -22,8 +22,7 @@ class ConstructiveHeuristicFactory:
         Return tuple (task_cost, task_completion_time)
         """
         C_earliest = t0 + self.task_parameters['p'][task]
-
-
+        
         if C_earliest >= self.due_date:
             C_j_chapeu = C_earliest
         else:
@@ -70,6 +69,7 @@ class ConstructiveHeuristicFactory:
 
             kappa += current_kappa
 
+        
         return (kappa, C_j_chapeu)
 
         
@@ -91,7 +91,7 @@ class ConstructiveHeuristicFactory:
             for j in self.missing_tasks_to_be_scheduled:
                 # Calculate task cost
                 task_cost[j], task_completion_time[j]  = self.calculate_task_cost_and_time(j, completion_time)
-
+                
                 # if argmin is none initialize it
                 if arg_min == None:
                     arg_min = j
@@ -99,7 +99,7 @@ class ConstructiveHeuristicFactory:
                 else:
                     if task_cost[j] < task_cost[arg_min]:
                         arg_min = j
-
+            
             # Update sequence 
             sequence_output.append(arg_min)
             self.missing_tasks_to_be_scheduled.remove(arg_min)

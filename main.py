@@ -4,8 +4,13 @@ from src.problem_creator import ProblemManager
 path_data = 'data/sch200k1.csv'
 due_date = 851
 
-# Adjust instance name, and SA heuristic parameters 
+# Adjust instance name
 instance_name = '200'
+
+# Consctructive Heuristic Parameters
+has_constructive_heuristic = True
+
+# SA heuristic parameters 
 temperature_alpha = 0.8
 stages_stop_criteria = 3
 initial_acceptance = 0.3
@@ -21,7 +26,8 @@ id = instance_name      + \
     '_Stop_' + str(stages_stop_criteria) + \
     '_InitAccept_' + str(initial_acceptance) + \
     '_pctchange_' + str(minimum_pct_change) + \
-    '_wjump_' + str(window_jump)
+    '_wjump_' + str(window_jump) + \
+    '_construcHeur_' + str(has_constructive_heuristic)
 
 heuristic_parameters = {
     'temperature_alpha': temperature_alpha,
@@ -36,5 +42,5 @@ fix_and_optimize_parameters = {
     'window_size': window_size
 }
 
-problem_creator = ProblemManager(path_data, due_date, id, heuristic_parameters, fix_and_optimize_parameters)
+problem_creator = ProblemManager(path_data, due_date, id, heuristic_parameters, fix_and_optimize_parameters, has_constructive_heuristic)
 problem_creator.run()
