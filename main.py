@@ -1,11 +1,11 @@
 from src.problem_creator import ProblemManager
 
 # Adjust instance and Due Date
-path_data = 'data/sch200k1.csv'
-due_date = 851
+path_data = 'data/sch100k1.csv'
+due_date = 454
 
 # Adjust instance name
-instance_name = '_2_neighborhoods_200'
+instance_name = 'NEW_REAL_TWO_2_neighborhoods_200'
 
 # Consctructive Heuristic Parameters
 has_constructive_heuristic = True

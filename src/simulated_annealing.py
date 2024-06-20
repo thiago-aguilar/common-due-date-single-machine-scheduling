@@ -67,7 +67,7 @@ class SimulatedAnnealing:
                 if  n <= (minimum_tested / 2):
                     neighborhood = 3
                 else:
-                    neighborhood = 3
+                    neighborhood = 4
                     
 
                 new_solution = self.get_new_solution(neighborhood_type = neighborhood)
