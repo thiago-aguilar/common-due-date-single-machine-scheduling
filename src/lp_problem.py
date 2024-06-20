@@ -116,7 +116,7 @@ class ProblemEvaluator:
     
     def free_all_tasks(self):
         for task_id in self.task_df.index:
-            self.model.d[task_id].setlb(0)
+            self.model.d[task_id].setlb(self.model.p[task_id])
             self.model.d[task_id].setub(np.inf)
 
 
