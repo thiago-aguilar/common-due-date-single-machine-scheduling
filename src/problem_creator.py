@@ -7,6 +7,7 @@ import time
 import os
 from dotenv import load_dotenv
 from .utils.excel_writer import ExcelWriter
+import csv
 
 class ProblemManager:
     def __init__(self, 
@@ -101,6 +102,13 @@ class ProblemManager:
             FO_trace=FO_trace,
             results=solution
         )
+        breakpoint()
+
+        # Export csv
+        list_tasks = solution['task_id'].to_list()
+        with open('AguilarMourao.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(list_tasks)
 
         
     def generate_random_solution(self):

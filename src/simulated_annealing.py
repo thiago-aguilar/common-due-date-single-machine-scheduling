@@ -4,7 +4,7 @@ from .lp_problem import ProblemEvaluator
 import math
 
 class SimulatedAnnealing:
-    neighborhood_types = {1, 2, 3}
+    neighborhood_types = {1, 2, 3, 4}
     
     def __init__(self, task_df, due_date, initial_solution, heuristic_parameters):
         self.task_df = task_df
@@ -63,19 +63,11 @@ class SimulatedAnnealing:
             # while perturbations_accepted < minimum_perturbations:
             while (n < minimum_tested): #and (perturbations_accepted < minimum_perturbations) :
                 
-                if                                 n <= (minimum_tested / 3):
-                    neighborhood = 1
-                elif        (2 * minimum_tested / 3) > n >= (minimum_tested / 3):
-                    neighborhood = 2
-                elif       (2 * minimum_tested / 3) <= n:
+                # Testing permutation of neighborhoods 
+                if  n <= (minimum_tested / 2):
                     neighborhood = 3
                 else:
-                    raise Exception('error, neighborhood not detected')
-                neighborhood = 3
-                # if (n > (minimum_tested / 2) ) or (perturbations_accepted >= (minimum_perturbations / 3)):
-                #     neighborhood = 2
-                # else:
-                #     neighborhood = 1
+                    neighborhood = 3
                     
 
                 new_solution = self.get_new_solution(neighborhood_type = neighborhood)
@@ -180,6 +172,8 @@ class SimulatedAnnealing:
             return_value = self.get_new_solution_type_2()
         elif neighborhood_type == 3:
             return_value = self.get_new_solution_type_3()
+        elif neighborhood_type == 4:
+            return_value = self.get_new_solution_type_4()
         else:
             raise Exception('Error: Neighborhood type not implemented')
 
@@ -249,7 +243,20 @@ class SimulatedAnnealing:
 
         return current_tasks[0].to_list()
 
+    def get_new_solution_type_4(self) -> list:
+        current_tasks = pd.DataFrame(self.current_solution[:])
+        
+        random_task = current_tasks.sample()
 
+        # Remove selected tasks from current tasks
+        current_tasks = current_tasks.drop(random_task.index)
+
+        # Reinsere a tarefa removida em uma linha aleatória
+        random_row = np.random.randint(low=0, high=len(current_tasks), size=1)[0]
+        current_tasks = pd.concat([current_tasks.iloc[:random_row], random_task, current_tasks.iloc[random_row:]]).reset_index(drop=True)
+
+        return current_tasks[0].to_list()
+        
 
 
     def calculate_minimum_perturbations(self, current_temperature) -> int:

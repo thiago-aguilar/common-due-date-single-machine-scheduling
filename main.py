@@ -5,7 +5,7 @@ path_data = 'data/sch200k1.csv'
 due_date = 851
 
 # Adjust instance name
-instance_name = '200'
+instance_name = '_2_neighborhoods_200'
 
 # Consctructive Heuristic Parameters
 has_constructive_heuristic = True
